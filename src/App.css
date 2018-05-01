@@ -1,0 +1,12 @@
+.App {
+  text-align: center;
+}
+
+button{
+  background-color: black;
+  color: white;
+  border-radius: 8px;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}

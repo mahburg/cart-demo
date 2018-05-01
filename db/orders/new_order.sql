@@ -1,0 +1,5 @@
+INSERT INTO orders
+(user_id, order_ts)
+VALUES
+($1, CURRENT_TIMESTAMP)
+RETURNING *;

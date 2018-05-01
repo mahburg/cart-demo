@@ -1,0 +1,23 @@
+header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 15px;
+    background-color: #222;
+    color: white;
+}
+header a{
+    color: white;
+    text-decoration: none;
+}
+
+header button{
+    background-color: white;
+    color: black;
+    height: fit-content;
+    margin-left: 10px;
+}
+.user-info{
+    display:flex;
+    align-items: center;
+}
