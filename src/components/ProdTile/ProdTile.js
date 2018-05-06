@@ -9,7 +9,7 @@ export default function ProdTile(props) {
             <Link to={`/product/${product.id}`}><h2>{product.title}</h2></Link>
             <p>{product.description}</p>
             <h5>${product.price}</h5>
-            <button>Add to cart</button>
+            <button onClick={()=>props.addToCart(product.id)} >Add to cart</button>
         </div>
     )
 }

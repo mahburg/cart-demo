@@ -10,25 +10,14 @@
     background-color: #222;
     color: white;
 }
-.cart-item{
-    display: grid;
-    grid-template-columns: 1fr 80px 80px 80px;
-    align-items: center;
-    margin-bottom: 5px;
-}
-.cart-item h3{
-    padding: 3px;
-}
-.cart-item p{
-    padding: 3px;
-}
-.cart-item .price{
-    text-align: right;
-    padding-right: 8px;
-}
-.cart-item .quantity{
-    text-align: center;
-}
+
 .cart-total{
+    margin-top: 10px;
     display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.cart-total button{
+    margin-left: 10px;
 }

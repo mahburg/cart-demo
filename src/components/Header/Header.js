@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from "react-router-dom";
+import { Link , withRouter} from "react-router-dom";
 import axios from 'axios';
 import './Header.css';
 
@@ -12,17 +12,24 @@ class Header extends Component{
     }
     login(e){
         e.preventDefault();
-        console.log('logging in')
-        axios.post('/login',{username: this.state.input}).then(resp=>{
-            console.log(resp)
-            this.props.setUser(resp.data)
-        }).catch(console.error)
+        if (this.state.input){
+            console.log('logging in')
+            axios.post('/login',{username: this.state.input}).then(resp=>{
+                console.log(resp)
+                this.props.setUser(resp.data)
+                this.props.history.push('/')
+            }).catch(err=>{
+                console.log("ERROR");
+                console.error(err)
+            })
+        }
     }
     logout(){
         axios.get('/logout').then(resp=>{
             console.log(resp)
-            this.props.setUser(null)
-        }).catch(console.error)
+                this.props.setUser(null)
+                this.props.history.push('/')
+            }).catch(console.error)
     }
     handleInput(e){
         this.setState({[e.target.name]: e.target.value})
@@ -52,4 +59,4 @@ class Header extends Component{
     }
 }
 
-export default Header;
+export default withRouter(Header);

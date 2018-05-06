@@ -20,7 +20,7 @@ class App extends Component {
   }
   componentDidMount(){
     axios.get('/auth/me').then(resp=>{
-      console.log(resp)
+      // console.log(resp)
       this.setState({ user: resp.data });
     }).catch(console.error)
   }

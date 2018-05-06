@@ -3,6 +3,8 @@ const express = require('express')
     , session = require('express-session')
 
 const config = require('./config')
+    , utils = require('./utils.js')
+    , _ = require('lodash')
 
 const app = express()
     , PORT = config.PORT || 8000
@@ -25,7 +27,10 @@ app.use((req, res, next)=>{
 massive(config.dbURI).then(dbInstance=>{
     app.set('db', dbInstance)
     console.log('DB Conncected')
-}).catch(console.error)
+}).catch(err=>{
+    console.error
+    res.status(500).send(err)(err)
+})
 
 //---------- Login/Auth Endpoints -----------
 app.post('/login',(req, res)=>{
@@ -42,17 +47,28 @@ app.post('/login',(req, res)=>{
                 console.log(user)
                 req.session.user = user;
                 outUser = user;
-        }).catch(console.error)
+                res.status(200).send(outUser)
+        }).catch(err=>{
+            console.error(err)
+            res.status(500).send(err)
+        })
         }
         if (req.session.cart){
             let cartStack = []
             req.session.cart.forEach((item, i)=>db.cart.add_to_cart(outUser.id, item.prod_id, item.quantity))
             Promise.all(cartStack).then(resp=>{
                 res.status(200).send(outUser)
-            }).catch(console.error)
+            }).catch(err=>{
+                console.error(err)
+                res.status(500).send(err)
+            })
+        } else{
+            res.status(200).send(outUser)
         }
-        res.status(200).send(outUser)
-    }).catch(console.error)
+    }).catch(err=>{
+        console.error(err)
+        res.status(500).send(err)
+    })
 })
 
 app.get('/logout', (req, res)=>{
@@ -74,14 +90,20 @@ app.get('/api/products', (req, res)=>{
     let db = req.app.get('db')
     db.products.find().then(products=>{
         res.status(200).send(products)
-    }).catch(console.error)
+    }).catch(err=>{
+        console.error(err)
+        res.status(500).send(err)
+    })
 })
 app.get('/api/product/:id', (req, res)=>{
     let db = req.app.get('db')
     db.products.findOne({id: req.params.id}).then(product=>{
         // console.log(product)
         res.status(200).send(product)
-    }).catch(console.error)
+    }).catch(err=>{
+        console.error(err)
+        res.status(500).send(err)
+    })
 })
 
 //----------↓ Cart Endpoints ↓-----------
@@ -91,7 +113,10 @@ app.get('/api/cart', (req, res)=>{
         db.cart.get_cart(req.user.id).then(resp=>{
             // console.log(resp)
             res.status(200).send(resp)
-        }).catch(console.error)
+        }).catch(err=>{
+            console.error(err)
+            res.status(500).send(err)
+        })
     } else {
         if (!req.session.cart){
             req.session.cart = []
@@ -106,7 +131,10 @@ app.post('/api/cart', (req, res)=>{
         db.cart.add_to_cart(req.user.id, productID, quantity ).then(resp=>{
             console.log(resp)
             res.status(200).send(resp)
-        }).catch(console.error)
+        }).catch(err=>{
+            console.error(err)
+            res.status(500).send(err)
+        })
     } else {
         if (!req.session.cart){
             req.session.cart = []
@@ -117,17 +145,24 @@ app.post('/api/cart', (req, res)=>{
 })
 app.put('/api/cart', (req, res)=>{
     let db = req.app.get('db')
+    console.log(req.body)
     let { cartID, newQuantity } = req.body;
     db.cart.change_quantity( cartID, newQuantity ).then(resp=>{
         console.log(resp)
         res.status(200).send(resp)
-    }).catch(console.error)
+    }).catch(err=>{
+        console.error(err)
+        res.status(500).send(err)
+    })
 })
 app.delete('/api/cart/:id', (req, res)=>{
     let db = req.app.get('db')
     db.cart.remove_from_cart(req.params.id).then(resp=>{
         res.status(200).send()
-    }).catch(console.error)
+    }).catch(err=>{
+        console.error(err)
+        res.status(500).send(err)
+    })
 })
 
 //----------↓ Order Endpoints ↓-----------
@@ -136,7 +171,9 @@ app.post('/api/order', (req, res)=>{
     db.cart.get_cart(req.user.id).then(cart_items=>{
         console.log(cart_items)
         db.orders.new_order(req.user.id).then(new_order=>{
+            new_order = new_order[0]
             console.log(new_order)
+            // This does something ↓
             let orderStack = []
             cart_items.forEach(item=>{
                 orderStack.push( db.orders.add_order_item(new_order.id, item.prod_id, item.quantity, item.price))
@@ -144,22 +181,43 @@ app.post('/api/order', (req, res)=>{
             Promise.all(orderStack).then(resp=>{
                 db.cart.empty_cart(req.user.id)
                 res.status(200).send('Order placed')
-            }).catch(console.error)
-        }).catch(console.error)
-    }).catch(console.error)
+            }).catch(err=>{
+                console.error(err)
+                res.status(500).send(err)
+            })
+
+        }).catch(err=>{
+            console.error(err)
+            res.status(500).send(err)
+        })
+    }).catch(err=>{
+        console.error(err)
+        res.status(500).send(err)
+    })
 })
 
 app.get('/api/user/orders', (req, res)=>{
     let db = req.app.get('db')
-    db.orders.get_user_orders(req.user.id).then(orders=>{
-        let orderStack = []
-        orderStack.push( orders.forEach(order=>db.orders.get_order_total(order.id)))
-        Promise.all(orderStack).then(resp=>{
-            console.log(resp)
-            resp.forEach((orderArr, i)=> orders[i].total = orderArr.reduce((s,v)=>v.price * v.quantity,0))
-            res.status(200).send(orders)
-        }).catch(console.error)
-    }).catch(console.error)
+    console.log('orders endpoint');
+    if (req.user){
+        console.log('user id:', req.user.id);
+        db.orders.get_user_orders(req.user.id).then(orders=>{
+            let obj = _.groupBy(orders, 'order_id')
+            let output = []
+            console.log('grouped', typeof obj, obj);
+            for (let key in obj){
+                output.push(utils.consolidate(obj[key], 'items', 'order_id,order_ts,fulfilled,user_id'))
+            }
+            // orders = utils.consolidate(orders, 'items');
+            console.log('orders',output);
+            res.status(200).send(output);
+        }).catch(err=>{
+            console.error(err)
+            res.status(500).send(err)
+        })
+    } else {
+        res.status(200).send([])
+    }
 })
 
 app.get('/api/user/order/:id', (req, res)=>{
@@ -171,8 +229,14 @@ app.get('/api/user/order/:id', (req, res)=>{
             console.log(resp)
             resp.forEach((orderArr, i)=> orders[i].order_items = orderArr)
             res.status(200).send(orders)
-        }).catch(console.error)
-    }).catch(console.error)
+        }).catch(err=>{
+            console.error(err)
+            res.status(500).send(err)
+        })
+    }).catch(err=>{
+        console.error(err)
+        res.status(500).send(err)
+    })
 })
 
 //----------↓ Admin Order Endpoints ↓-----------

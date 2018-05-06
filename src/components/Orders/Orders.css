@@ -1,0 +1,12 @@
+
+.order{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    color: black;
+    text-decoration: none;
+}
+
+.order-heading{
+    background-color: #222;
+    color: white;
+}

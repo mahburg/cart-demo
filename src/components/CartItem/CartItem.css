@@ -1,0 +1,32 @@
+.cart-item{
+    display: grid;
+    grid-template-columns: 1fr 180px 120px 100px 80px;
+    align-items: center;
+    padding: 5px 0 5px 5px;
+}
+.cart-item h3{
+    padding: 3px;
+}
+.cart-item p{
+    padding: 3px;
+}
+.cart-item .unit-price{
+    text-align: right;
+    padding-right: 8px;
+}
+.cart-item .price{
+    text-align: right;
+    padding-right: 8px;
+}
+.cart-item .quantity{
+    text-align: right;
+    cursor: pointer;
+}
+
+.qnty-update{
+    display: flex;
+}
+
+.qnty-update input{
+    width: 50px;
+}
