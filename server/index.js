@@ -42,29 +42,31 @@ app.post('/login',(req, res)=>{
         if (user){
             req.session.user = user;
             outUser = user;
+            res.status(200).send(outUser)
         } else{
             db.users.create_user(req.body.username).then(user=>{
+                user = user[0];
                 console.log(user)
                 req.session.user = user;
                 outUser = user;
-                res.status(200).send(outUser)
-        }).catch(err=>{
-            console.error(err)
-            res.status(500).send(err)
-        })
-        }
-        if (req.session.cart){
-            let cartStack = []
-            req.session.cart.forEach((item, i)=>db.cart.add_to_cart(outUser.id, item.prod_id, item.quantity))
-            Promise.all(cartStack).then(resp=>{
-                res.status(200).send(outUser)
+                if (req.session.cart){
+                    let cartStack = []
+                    req.session.cart.forEach((item, i)=>db.cart.add_to_cart(outUser.id, item.prod_id, item.quantity))
+                    Promise.all(cartStack).then(resp=>{
+                        res.status(200).send(outUser)
+                    }).catch(err=>{
+                        console.error(err)
+                        res.status(500).send(err)
+                    })
+                } else{
+                    res.status(200).send(outUser)
+                }
             }).catch(err=>{
                 console.error(err)
                 res.status(500).send(err)
             })
-        } else{
-            res.status(200).send(outUser)
         }
+        
     }).catch(err=>{
         console.error(err)
         res.status(500).send(err)
@@ -129,7 +131,7 @@ app.post('/api/cart', (req, res)=>{
     let { productID, quantity } = req.body;
     if (req.user){
         db.cart.add_to_cart(req.user.id, productID, quantity ).then(resp=>{
-            console.log(resp)
+            // console.log(resp)
             res.status(200).send(resp)
         }).catch(err=>{
             console.error(err)
@@ -145,10 +147,9 @@ app.post('/api/cart', (req, res)=>{
 })
 app.put('/api/cart', (req, res)=>{
     let db = req.app.get('db')
-    console.log(req.body)
     let { cartID, newQuantity } = req.body;
     db.cart.change_quantity( cartID, newQuantity ).then(resp=>{
-        console.log(resp)
+        // console.log(resp)
         res.status(200).send(resp)
     }).catch(err=>{
         console.error(err)
@@ -169,14 +170,14 @@ app.delete('/api/cart/:id', (req, res)=>{
 app.post('/api/order', (req, res)=>{
     let db = req.app.get('db')
     db.cart.get_cart(req.user.id).then(cart_items=>{
-        console.log(cart_items)
+        console.log('cart_items', cart_items)
         db.orders.new_order(req.user.id).then(new_order=>{
             new_order = new_order[0]
-            console.log(new_order)
-            // This does something ↓
+            console.log('new_order',new_order)
             let orderStack = []
             cart_items.forEach(item=>{
-                orderStack.push( db.orders.add_order_item(new_order.id, item.prod_id, item.quantity, item.price))
+                console.log('item',JSON.stringify(item))
+                orderStack.push( db.orders.add_order_item(new_order.id, item.id, item.quantity, item.price))
             })
             Promise.all(orderStack).then(resp=>{
                 db.cart.empty_cart(req.user.id)
@@ -198,18 +199,13 @@ app.post('/api/order', (req, res)=>{
 
 app.get('/api/user/orders', (req, res)=>{
     let db = req.app.get('db')
-    console.log('orders endpoint');
     if (req.user){
-        console.log('user id:', req.user.id);
         db.orders.get_user_orders(req.user.id).then(orders=>{
             let obj = _.groupBy(orders, 'order_id')
             let output = []
-            console.log('grouped', typeof obj, obj);
             for (let key in obj){
                 output.push(utils.consolidate(obj[key], 'items', 'order_id,order_ts,fulfilled,user_id'))
             }
-            // orders = utils.consolidate(orders, 'items');
-            console.log('orders',output);
             res.status(200).send(output);
         }).catch(err=>{
             console.error(err)
@@ -222,21 +218,17 @@ app.get('/api/user/orders', (req, res)=>{
 
 app.get('/api/user/order/:id', (req, res)=>{
     let db = req.app.get('db')
-    db.orders.get_user_orders(req.user.id, req.params.id).then(orders=>{
-        let orderStack = []
-        orderStack.push( orders.forEach(order=>db.orders.get_order_total(order.id)))
-        Promise.all(orderStack).then(resp=>{
-            console.log(resp)
-            resp.forEach((orderArr, i)=> orders[i].order_items = orderArr)
-            res.status(200).send(orders)
-        }).catch(err=>{
-            console.error(err)
-            res.status(500).send(err)
-        })
+    
+    db.orders.get_user_order( req.params.id).then(order=>{
+
+        order = utils.consolidate(order, 'items', 'order_ts,fulfilled,order_id,user_id')
+        console.log('order: ', order)
+        res.status(200).send(order)
     }).catch(err=>{
         console.error(err)
         res.status(500).send(err)
     })
+    
 })
 
 //----------↓ Admin Order Endpoints ↓-----------

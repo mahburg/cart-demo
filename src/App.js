@@ -7,6 +7,7 @@ import Home from './components/Home/Home';
 import Product from './components/Product/Product';
 import Cart from './components/Cart/Cart';
 import Orders from './components/Orders/Orders';
+import Order from './components/Order/Order';
 
 import './App.css';
 
@@ -33,6 +34,7 @@ class App extends Component {
         <div className="App">
           <Header setUser={this.setUser} user={this.state.user}/>
           <Switch>
+            <Route path="/order/:id" component={Order}/>
             <Route path="/orders" component={Orders}/>
             <Route path="/cart" component={Cart}/>
             <Route path="/product/:id" component={Product}/>

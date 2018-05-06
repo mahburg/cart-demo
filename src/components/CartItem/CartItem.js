@@ -21,8 +21,9 @@ class CartItem extends Component{
     modQuantity(){
         if(this.state.quantity !== this.props.item.quantity){
             axios.put('/api/cart', {cartID: this.props.item.cart_id, newQuantity: this.state.quantity}).then(resp=>{
-                console.log(resp)
+                // console.log(resp)
                 this.setState({edit: false})
+                this.props.refreshCart()
             }).catch(console.error)
         } else {
             this.setState({edit: false})

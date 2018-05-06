@@ -11,6 +11,7 @@ class Cart extends Component{
         this.state = {
             cartItems: []
         }
+        this.getCart = this.getCart.bind(this);
     }
     componentDidMount(){
         this.getCart()
@@ -37,7 +38,7 @@ class Cart extends Component{
         }).catch(console.error)
     }
     render(){
-        const cart = this.state.cartItems.map((c,i)=>{return <CartItem n={i} key={i} item={c}/>})
+        const cart = this.state.cartItems.map((c,i)=>{return <CartItem n={i} key={i} item={c} refreshCart={this.getCart}/>})
         const cartTotal = (this.state.cartItems.reduce((s,v)=>s+(v.quantity*v.price),0)).toFixed(2) || '0.00'
 
         return(
