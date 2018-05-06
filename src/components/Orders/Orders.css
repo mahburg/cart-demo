@@ -5,8 +5,13 @@
     color: black;
     text-decoration: none;
 }
-
+.order:hover{
+    background-color: #DDD !important;
+}
 .order-heading{
     background-color: #222;
     color: white;
+}
+.order-heading:hover{
+    background-color: #222 !important;
 }
