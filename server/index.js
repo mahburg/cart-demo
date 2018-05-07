@@ -131,8 +131,13 @@ app.post('/api/cart', (req, res)=>{
     let { productID, quantity } = req.body;
     if (req.user){
         db.cart.add_to_cart(req.user.id, productID, quantity ).then(resp=>{
-            // console.log(resp)
-            res.status(200).send(resp)
+            db.cart.get_cart(req.user.id).then(resp=>{
+                // console.log(resp)
+                res.status(200).send(resp)
+            }).catch(err=>{
+                console.error(err)
+                res.status(500).send(err)
+            })
         }).catch(err=>{
             console.error(err)
             res.status(500).send(err)

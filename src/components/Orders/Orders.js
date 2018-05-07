@@ -34,6 +34,13 @@ class Orders extends Component{
         return(
             <section className="orders">
                 <h3>My Orders:</h3>
+                <div className="filters">
+                    <select name="" id="">
+                        <option value="">last week</option>
+                        <option value="">last month</option>
+                        <option value="">last year</option>
+                    </select>
+                </div>
                 <div>
                     <div className="order order-heading">
                         <h4>Placed</h4>
