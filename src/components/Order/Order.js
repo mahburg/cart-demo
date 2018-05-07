@@ -8,12 +8,14 @@ class Order extends Component{
             order: {}
         }
     }
+    
     componentDidMount(){
         axios.get(`/api/user/order/${this.props.match.params.id}`).then(resp=>{
             console.log(resp)
             this.setState({order: resp.data})
         }).catch(console.error)
     }
+
     render(){
         const {order} = this.state;
         let ts = new Date(order.order_ts)

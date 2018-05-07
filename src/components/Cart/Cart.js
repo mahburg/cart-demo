@@ -34,11 +34,12 @@ class Cart extends Component{
     checkout(){
         axios.post('/api/order').then(resp=>{
             console.log(resp)
-            this.props.history.push('/orders')
+            this.props.history.push('/order/'+resp.data.id)
         }).catch(console.error)
     }
     render(){
         const cart = this.state.cartItems.map((c,i)=>{return <CartItem n={i} key={i} item={c} refreshCart={this.getCart}/>})
+
         const cartTotal = (this.state.cartItems.reduce((s,v)=>s+(v.quantity*v.price),0)).toFixed(2) || '0.00'
 
         return(
@@ -61,7 +62,7 @@ class Cart extends Component{
                 </section>
                 <hr/>
                 <div className="cart-total">
-                    <h3>Total: {cartTotal || 0}</h3>
+                    <h3>Total: ${cartTotal || 0}</h3>
                     <br/>
                     <button onClick={()=>this.checkout()} >Checkout</button>
                 </div>

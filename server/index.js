@@ -181,7 +181,7 @@ app.post('/api/order', (req, res)=>{
             })
             Promise.all(orderStack).then(resp=>{
                 db.cart.empty_cart(req.user.id)
-                res.status(200).send('Order placed')
+                res.status(200).send({id: new_order.id})
             }).catch(err=>{
                 console.error(err)
                 res.status(500).send(err)
